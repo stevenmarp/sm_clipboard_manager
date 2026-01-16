@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="sm_clipboard_manager.ClipboardManagerSystray">
+        <Dropdown position="'bottom-end'" menuClass="'o_clipboard_dropdown_menu'">
+            <button class="o_clipboard_systray_item d-flex align-items-center btn" title="Clipboard History">
+                <i class="fa fa-clipboard"/>
+            </button>
+            <t t-set-slot="content">
+                <div class="o_clipboard_panel">
+                <!-- Header -->
+                <div class="o_clipboard_header">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">
+                            <i class="fa fa-clipboard me-1"/>
+                            Clipboard History
+                        </span>
+                        <button class="btn btn-sm btn-link text-white p-0" 
+                                t-on-click="clearHistory"
+                                title="Clear all">
+                            <i class="fa fa-trash"/>
+                        </button>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-transparent border-end-0 text-white-50">
+                            <i class="fa fa-search"/>
+                        </span>
+                        <input type="text" 
+                               class="form-control border-start-0 bg-transparent text-white" 
+                               placeholder="Search clipboard..."
+                               t-on-input="onSearchChange"/>
+                    </div>
+                </div>
+                
+                <!-- Pinned Section -->
+                <div t-if="state.pinned.length > 0" class="o_pinned_section">
+                    <div class="o_section_title">
+                        <i class="fa fa-thumb-tack me-1"/>
+                        Pinned
+                    </div>
+                    <t t-foreach="state.pinned" t-as="item" t-key="'pinned_' + item_index">
+                        <div class="o_clipboard_item o_pinned">
+                            <div class="o_item_content" t-on-click="() => this.copyToClipboard(item)">
+                                <div class="o_item_preview"><t t-esc="getPreview(item)"/></div>
+                                <div class="o_item_meta">
+                                    <span class="o_item_length"><t t-esc="item.length"/> chars</span>
+                                </div>
+                            </div>
+                            <div class="o_item_actions">
+                                <button class="btn btn-sm text-warning" t-on-click="() => this.unpinItem(item)" title="Unpin">
+                                    <i class="fa fa-thumb-tack"/>
+                                </button>
+                                <button class="btn btn-sm text-info" t-on-click="() => this.copyToClipboard(item)" title="Copy">
+                                    <i class="fa fa-copy"/>
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+                
+                <!-- History Section -->
+                <div class="o_history_section">
+                    <div t-if="filteredHistory.length > 0" class="o_section_title">
+                        <i class="fa fa-history me-1"/>
+                        Recent
+                    </div>
+                    
+                    <t t-if="filteredHistory.length === 0 and state.pinned.length === 0">
+                        <div class="o_empty_state">
+                            <i class="fa fa-clipboard fa-3x mb-3 opacity-25"/>
+                            <p class="mb-1">No clipboard history</p>
+                            <small class="text-muted">Copy some text to start</small>
+                        </div>
+                    </t>
+                    
+                    <t t-if="filteredHistory.length === 0 and state.searchTerm">
+                        <div class="o_empty_state">
+                            <p class="mb-0 text-muted">No matches for "<t t-esc="state.searchTerm"/>"</p>
+                        </div>
+                    </t>
+                    
+                    <div class="o_clipboard_list">
+                        <t t-foreach="filteredHistory.filter(h => !state.pinned.includes(h))" t-as="item" t-key="'history_' + item_index">
+                            <div class="o_clipboard_item">
+                                <div class="o_item_content" t-on-click="() => this.copyToClipboard(item)">
+                                    <div class="o_item_preview"><t t-esc="getPreview(item)"/></div>
+                                    <div class="o_item_meta">
+                                        <span class="o_item_length"><t t-esc="item.length"/> chars</span>
+                                        <span t-if="item.includes('\n')" class="o_item_lines">
+                                            <t t-esc="item.split('\n').length"/> lines
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="o_item_actions">
+                                    <button class="btn btn-sm text-muted" t-on-click="() => this.pinItem(item)" title="Pin">
+                                        <i class="fa fa-thumb-tack"/>
+                                    </button>
+                                    <button class="btn btn-sm text-info" t-on-click="() => this.copyToClipboard(item)" title="Copy">
+                                        <i class="fa fa-copy"/>
+                                    </button>
+                                    <button class="btn btn-sm text-danger" t-on-click="() => this.deleteItem(item)" title="Delete">
+                                        <i class="fa fa-times"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="o_clipboard_footer">
+                    <small class="text-muted">
+                        <i class="fa fa-info-circle me-1"/>
+                        Click item to copy • Ctrl+Shift+V
+                    </small>
+                </div>
+            </div>
+            </t>
+        </Dropdown>
+    </t>
+</templates>
